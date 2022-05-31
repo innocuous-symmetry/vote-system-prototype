@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>Socket IO</title>
+    </head>
+
+    <body>
+        <h1>My server is delivering HTML now!</h1>
+        <h2>This is going to be where my sample RTC application lives.</h2>
+
+        <div>
+            <h3>Messages:</h3>
+            <ul></ul>
+
+            <form id="message-form">
+                <input id="message-input" type="text"/>
+                <button>Send</button>
+            </form>
+
+            <form id="voting-form">
+                <h4>Current votes:</h4>
+                <div id="vote-section"></div>
+
+                <button type='button' id="vote-yes">Vote yes</button>
+                <button type='button' id="vote-no">Vote no</button>
+            </form>
+        </div>
+
+        <!-- Client side socket.io integration -->
+        <script src="/socket.io/socket.io.js"></script>
+        <script>
+            const socket = io();
+            let votes = [];
+
+            let messages = document.querySelector('ul');
+            const messageForm = document.getElementById('message-form');
+            const input = document.getElementById('message-input');
+
+            messageForm.addEventListener('submit', (e) => {
+                e.preventDefault();
+                if (input.value) {
+                    socket.emit('message', input.value);
+                    input.value = '';
+                }
+            });
+
+            socket.on('message', (msg) => {
+                let item = document.createElement('li');
+                item.textContent = msg;
+                messages.appendChild(item);
+                window.scrollTo(0, document.body.scrollHeight);
+            });
+
+            const voteYes = document.getElementById('vote-yes');
+            const voteNo = document.getElementById('vote-no');
+
+            voteYes.addEventListener('click', () => {
+                socket.emit('vote', {id: socket.id, vote: true});
+            });
+
+            voteNo.addEventListener('click', () => {
+                socket.emit('vote', {id: socket.id, vote: false});
+            });
+
+            let voteSection = document.getElementById('vote-section');
+
+            socket.on('vote', (voteData) => {
+                let voterDecision = voteData.vote ? "Yes" : "No";
+                let found = votes.find(x => x.id === voteData.id);
+
+                if (found && found.vote === voteData.vote) return;
+                if (found && found.vote !== voteData.vote) {
+                    let idx = votes.indexOf(found);
+                    votes[idx].vote = voteData.vote;
+                    let voteToUpdate = document.getElementById(voteData.id);
+                    voteToUpdate.textContent = `${voteData.id.substring(0,2)} votes: ${voterDecision}`;
+                }
+
+                if (!found) {
+                    votes.push(voteData);
+                    let newVoter = document.createElement('p')
+                    
+                    newVoter.setAttribute('id', voteData.id);
+                    newVoter.textContent = `${voteData.id.substring(0,2)} votes: ${voterDecision}`;
+
+                    voteSection.appendChild(newVoter);
+                }
+            });
+
+        </script>
+    </body>
+</html>
