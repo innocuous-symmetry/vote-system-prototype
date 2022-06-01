@@ -5,8 +5,8 @@
     </head>
 
     <body>
-        <h1>My server is delivering HTML now!</h1>
-        <h2>This is going to be where my sample RTC application lives.</h2>
+        <h1>It's a voting app!</h1>
+        <h2>Use the forms below for realtime messaging and voting.</h2>
 
         <div>
             <h3>Messages:</h3>
@@ -79,7 +79,7 @@
                 if (!found) {
                     votes.push(voteData);
                     let newVoter = document.createElement('p')
-                    
+
                     newVoter.setAttribute('id', voteData.id);
                     newVoter.textContent = `${voteData.id.substring(0,2)} votes: ${voterDecision}`;
 
